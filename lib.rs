@@ -2,7 +2,10 @@
 #![feature(min_specialization)]
 
 #[openbrush::contract]
-mod test_psp34 {
+mod nft_psp34 {
+
+    //let tokenId: u32 = 0;
+
     use ink_prelude::{
         vec::Vec,
         string::{
@@ -21,7 +24,7 @@ mod test_psp34 {
 
     #[derive(SpreadAllocate, Storage)]
     #[ink(storage)]
-    pub struct TestPsp34 {
+    pub struct NftPsp34 {
         #[storage_field]
         psp34: psp34::Data,
         #[storage_field]
@@ -29,11 +32,11 @@ mod test_psp34 {
         initial_id:Id,
     }
 
-    impl PSP34 for TestPsp34 {}
-    impl PSP34Metadata for TestPsp34 {}
-    impl PSP34Mintable for TestPsp34 {}
+    impl PSP34 for NftPsp34 {}
+    impl PSP34Metadata for NftPsp34 {}
+    impl PSP34Mintable for NftPsp34 {}
 
-    impl TestPsp34 {
+    impl NftPsp34 {
         /// Constructor that initializes the `bool` value to the given `init_value`.
         #[ink(constructor)]
         pub fn new(id: Id, name: String, symbol: String, base_uri: String) -> Self {
@@ -62,54 +65,46 @@ mod test_psp34 {
         }
 
         #[ink(message)]
-        pub fn token_uri(&self, id: Id) -> String {
+        pub fn token_uri(&self, id: u32) -> String {
             let base_uri_key: Vec<u8> = "base_uri".as_bytes().to_vec();
             let base_uri = match self.get_attribute(self.initial_id.clone(), base_uri_key) {
                 Some(value) => value,
                 None => return "".to_string(),
             };
             //let extention: &str = ".json".to_string();
-            String::from_utf8(base_uri.clone()).unwrap() + &self._get_id_string(id) + ".json"
+            //String::from_utf8(base_uri.clone()).unwrap() + &self._get_id_string(id) + ".json"
+            let id_str: &str = &id.to_string();
+            String::from_utf8(base_uri.clone()).unwrap() + id_str + ".json"
         }
 
         #[inline]
-        fn _get_id_string(&self, id:Id) -> String {
+        fn _get_id_string(&self, id: Id) -> String {
+
             match id {
                 Id::U8(u8) => {
-                    let tmp:u8 = u8;
+                    let tmp: u8 = u8;
                     tmp.to_string()
-                },
-                _ => "test".to_string(),
-
+                }
+                Id::U16(u16) => {
+                    let tmp: u16 = u16;
+                    tmp.to_string()
+                }
+                Id::U32(u32) => {
+                    let tmp: u32 = u32;
+                    tmp.to_string()
+                }
+                Id::U64(u64) => {
+                    let tmp: u64 = u64;
+                    tmp.to_string()
+                }
+                Id::U128(u128) => {
+                    let tmp: u128 = u128;
+                    tmp.to_string()
+                }
+                Id::Bytes(value) => String::from_utf8(value.clone()).unwrap(),
             }
+            
         }
     }
 
-    /// Unit tests in Rust are normally defined within such a `#[cfg(test)]`
-    /// module and test functions are marked with a `#[test]` attribute.
-    /// The below code is technically just normal Rust code.
-    #[cfg(test)]
-    mod tests {
-        /// Imports all the definitions from the outer scope so we can use them here.
-        use super::*;
-
-        /// Imports `ink_lang` so we can use `#[ink::test]`.
-        use ink_lang as ink;
-
-        /// We test if the default constructor does its job.
-        #[ink::test]
-        fn default_works() {
-            let test_psp34 = TestPsp34::default();
-            assert_eq!(test_psp34.get(), false);
-        }
-
-        /// We test a simple use case of our contract.
-        #[ink::test]
-        fn it_works() {
-            let mut test_psp34 = TestPsp34::new(false);
-            assert_eq!(test_psp34.get(), false);
-            test_psp34.flip();
-            assert_eq!(test_psp34.get(), true);
-        }
-    }
 }
